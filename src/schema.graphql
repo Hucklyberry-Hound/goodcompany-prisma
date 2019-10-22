@@ -1,0 +1,110 @@
+# TODO: Need to implement unique constraints,
+#       however this requires resetting the service (i.e. deleting any rows on the db
+#       that violate this uniqueness constraint (having two Communities named 'Cats'))
+#       To reset, do: prisma reset
+
+type Query {
+  info: String!
+  posts: [Post!]
+  users: [User!]
+  communities(filter: String): [Community!]
+  comments: [Comment!]
+  userByHandle(username: String!, id: String) : User
+  communityByName(name: String!, id: String) : Community
+  getPost(id: String!) : Post
+  getCommunity(slug: String!) : Community
+  getCurrentUser(username: String! ) : User
+  events: [Event!]
+}
+
+type Mutation {
+  createNewPost(communityId: String!, title: String!, content: String!): Post!
+  createNewCommunity(name: String!, category: String!, hasPosts: Boolean!, hasEvents: Boolean!, hasMessages: Boolean!, privacy: String!, about: String!): Community!
+  createNewComment(postId: String!, content: String!) : Comment!
+  createNewUser(firstName: String!, lastName: String, email: String!, username: String!, password: String!, image: String!) : User!
+  signup(email: String!, password: String!, username: String!, firstName: String!, lastName: String!, image: String!): AuthPayload
+  login(email: String!, password: String!): AuthPayload
+  addUserToCommunity(communityId: String!) : User
+  createEvent(title: String!, date: String!, description: String!, community: String!): Event
+  deleteCommunity(communityId: String!): Community
+
+}
+
+type Subscription {
+  newPosts: Post
+  newMember: User
+  newMessage: Message!
+}
+
+# Define schema based on Prisma DB relations
+
+type User {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  email: String!
+  username: String!
+  password: String!
+  image: String!
+  messages: [Message!]
+  events: [Event!]
+  communities: [Community!]
+  ownerOf: [Community!]
+  comments: [Comment!]
+  posts: [Post!]
+}
+
+type AuthPayload {
+  token: String
+  user: User
+}
+
+type Community {
+    id: ID!
+    name: String!
+    category: String!
+    posts: [Post!]
+    hasPosts: Boolean!
+    hasEvents: Boolean!
+    hasMessages: Boolean!
+    events: [Event!]
+    slug: String!
+    privacy: String!
+    users: [User!]
+    owner: User!
+    about: String!
+}
+
+type Post {
+  id: ID!
+  postedBy: User
+  title: String!
+  slug: String!
+  content: String!
+  community: Community!
+  comments: [Comment!]
+}
+
+type Comment {
+  id: ID!
+  author: User!
+  content: String!
+  post: Post!
+}
+
+type Message {
+    id: ID!
+    sender: User!
+    recip: String!
+    content: String!
+    community: Community!
+}
+
+type Event {
+  id: ID!
+  title: String!
+  date: String!
+  description: String!
+  hostedby: User!
+  community: Community! 
+}
